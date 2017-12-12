@@ -1,0 +1,18 @@
+{
+  "presets": ["react", "es2015", "stage-1"],
+  "plugins": [
+    "syntax-dynamic-import",
+    "transform-decorators-legacy",
+    ["transform-runtime", { "polyfill": false, "regenerator": true }]
+  ],
+  "env": {
+    "development": {
+      "presets": [
+        "react-hmre"
+      ],
+      "plugins": [
+        "react-hot-loader/babel"
+      ]
+    }
+  }
+}
