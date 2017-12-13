@@ -4,7 +4,9 @@
   "description": "Projeto orientado ao conhecimento das tecnologias apresentadas",
   "main": "server/app.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "clean": "rimraf dist",
+    "dev": "npm run clean && ./node_modules/.bin/webpack --config webpack.config.js && babel -d dist server -s && node dist/app.js"
   },
   "repository": {
     "type": "git",
@@ -22,6 +24,7 @@
   },
   "homepage": "https://github.com/alantva/socket.io-redis-poc#readme",
   "dependencies": {
+    "autobind-decorator": "^2.1.0",
     "babel-cli": "^6.24.1",
     "babel-core": "^6.25.0",
     "babel-eslint": "^8.0.2",

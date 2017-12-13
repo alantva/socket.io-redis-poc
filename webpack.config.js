@@ -5,19 +5,20 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const distFolder = path.resolve(__dirname, './dist');
 const srcFolder = path.resolve(__dirname, './src');
+const port = process.env.PORT.toString();
 
 module.exports = {
   entry: {
     bundle: [
       'babel-polyfill',
       'react-hot-loader/patch',
-      `webpack-hot-middleware/client?path=http://localhost:${process.env.PORT}/__webpack_hmr`,
+      `webpack-hot-middleware/client?path=http://localhost:${port}/__webpack_hmr`,
       path.resolve(srcFolder, './main'),
     ],
   },
   output: {
     path: distFolder,
-    publicPath: process.env.PUBLIC_PATH.toString(),
+    publicPath: `http://localhost:${port}/`,
     filename: 'index.[name].js',
   },
   module: {

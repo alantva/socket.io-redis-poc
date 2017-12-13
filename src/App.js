@@ -1,15 +1,22 @@
-import React, { Component } from 'react';
+import React from 'react';
+import Chat from './Chat';
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { ready: false };
-  }
-  render() {
-    return (
-      <div>{this.state.ready.toString()}</div>
-    );
-  }
-}
+const inlineStyles = {
+  appContainer: {
+    display: 'flex',
+    height: '98%',
+    width: '100%',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+  },
+};
+
+const App = () => (
+  <div style={inlineStyles.appContainer}>
+    <Chat />
+    <Chat />
+    <Chat />
+  </div>
+);
 
 export default App;

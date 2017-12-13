@@ -45,12 +45,17 @@ const server = app.listen(port, (err) => {
 
 /* socket */
 
-const MainSocketServer = new SocketServer({ server });
+const SS = new SocketServer({ server });
 
-MainSocketServer.on('connection', (MSSocket) => {
-  console.log(`\nMain Socket Bot: ${MSSocket.id} está online. :)`);
+SS.on('connection', (socket) => {
+  console.log(`\nSocket Bot: ${socket.id} está online. :)`);
 
-  MSSocket.on('disconnect', () => {
-    console.log(`\nMain Socket Bot: ${MSSocket.id} se desconectou. :(`);
+  socket.on('message', (data) => {
+    console.log(`\nSocket Bot: ${socket.id} enviou uma mensagem.`);
+    socket.broadcast.emit('message', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`\nSocket Bot: ${socket.id} se desconectou. :(`);
   });
 });
