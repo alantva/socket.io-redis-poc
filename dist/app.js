@@ -68,15 +68,26 @@ var server = app.listen(port, function (err) {
 var SS = new SocketServer({ server: server });
 
 SS.on('connection', function (socket) {
-  console.log('\nSocket Bot: ' + socket.id + ' est\xE1 online. :)');
-
-  socket.on('message', function (data) {
-    console.log('\nSocket Bot: ' + socket.id + ' enviou uma mensagem.');
-    socket.broadcast.emit('message', data);
-  });
+  console.log('\nBot: ' + socket.id + ' est\xE1 online. :)');
 
   socket.on('disconnect', function () {
-    console.log('\nSocket Bot: ' + socket.id + ' se desconectou. :(');
+    console.log('\nBot: ' + socket.id + ' se desconectou. :(');
+  });
+});
+
+var namespaceSender = SS.of('/sender');
+var namespaceReceiver = SS.of('/receiver');
+
+namespaceReceiver.on('connection', function (socket) {
+  console.log('\nReceiver Bot: ' + socket.id + ' est\xE1 online. :)', process.pid);
+});
+
+namespaceSender.on('connection', function (socket) {
+  console.log('\nSender Bot: ' + socket.id + ' est\xE1 online. :)', process.pid);
+
+  socket.on('message', function (data) {
+    console.log('\nSocket Bot: ' + data.name + ' enviou uma mensagem.');
+    namespaceReceiver.emit('message', data);
   });
 });
 ;
@@ -95,6 +106,10 @@ var _temp = function () {
   __REACT_HOT_LOADER__.register(server, 'server', 'server/app.js');
 
   __REACT_HOT_LOADER__.register(SS, 'SS', 'server/app.js');
+
+  __REACT_HOT_LOADER__.register(namespaceSender, 'namespaceSender', 'server/app.js');
+
+  __REACT_HOT_LOADER__.register(namespaceReceiver, 'namespaceReceiver', 'server/app.js');
 }();
 
 ;

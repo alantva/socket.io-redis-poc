@@ -48,14 +48,25 @@ const server = app.listen(port, (err) => {
 const SS = new SocketServer({ server });
 
 SS.on('connection', (socket) => {
-  console.log(`\nSocket Bot: ${socket.id} está online. :)`);
-
-  socket.on('message', (data) => {
-    console.log(`\nSocket Bot: ${socket.id} enviou uma mensagem.`);
-    socket.broadcast.emit('message', data);
-  });
+  console.log(`\nBot: ${socket.id} está online. :)`);
 
   socket.on('disconnect', () => {
-    console.log(`\nSocket Bot: ${socket.id} se desconectou. :(`);
+    console.log(`\nBot: ${socket.id} se desconectou. :(`);
+  });
+});
+
+const namespaceSender = SS.of('/sender');
+const namespaceReceiver = SS.of('/receiver');
+
+namespaceReceiver.on('connection', (socket) => {
+  console.log(`\nReceiver Bot: ${socket.id} está online. :)`, process.pid);
+});
+
+namespaceSender.on('connection', (socket) => {
+  console.log(`\nSender Bot: ${socket.id} está online. :)`, process.pid);
+
+  socket.on('message', (data) => {
+    console.log(`\nSocket Bot: ${data.name} enviou uma mensagem.`);
+    namespaceReceiver.emit('message', data);
   });
 });

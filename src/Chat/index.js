@@ -11,8 +11,20 @@ const inlineStyles = {
     width: '98%',
     margin: '1%',
   },
+  statusContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  nameStyle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  pingStyle: {
+    fontSize: 10,
+  },
   messagesContainer: {
-    height: '70%',
+    height: '65%',
     width: '100%',
     overflow: 'auto',
     border: '1px solid grey',
@@ -40,6 +52,13 @@ const inlineStyles = {
   },
 };
 
+const socketOptions = {
+  reconnectionDelay: 5000,
+  reconnectionDelayMax: 10000,
+  transports: ['websocket', 'polling'],
+  forceNew: true,
+};
+
 class Chat extends Component {
   constructor(props) {
     super(props);
@@ -47,15 +66,15 @@ class Chat extends Component {
       name: names[Math.floor(Math.random() * names.length)],
       value: '',
       messages: [],
+      ping: 0,
     };
-    this.SOCKET = io(process.env.API_URL, {
-      reconnectionDelay: 5000,
-      reconnectionDelayMax: 10000,
-      transports: ['websocket', 'polling'],
-      forceNew: true,
-    });
+    this.io = io(process.env.API_URL, socketOptions);
+    this.io.on('pong', this.handlePong);
 
-    this.SOCKET.on('message', this.handleMessage);
+    this.receiver = io(`${process.env.API_URL}/receiver`, socketOptions);
+    this.receiver.on('message', this.handleMessage);
+
+    this.sender = io(`${process.env.API_URL}/sender`, socketOptions);
   }
 
   @autobind
@@ -66,21 +85,15 @@ class Chat extends Component {
 
   @autobind
   onKeyDown(ev) {
-    const { name, value, messages } = this.state;
+    const { name, value } = this.state;
     const { keyCode } = ev;
     if (keyCode === 13) {
       ev.preventDefault();
-      messages.push({
-        id: `id_${messages.length}`,
-        name: 'Me',
-        text: value,
-        me: true,
-      });
-      this.SOCKET.emit('message', {
+      this.sender.emit('message', {
         name,
         text: value,
       });
-      this.setState({ value: '', messages }, () => {
+      this.setState({ value: '' }, () => {
         this.container.scrollTop = this.container.offsetHeight;
       });
     }
@@ -88,19 +101,35 @@ class Chat extends Component {
 
   @autobind
   handleMessage(data) {
-    const { messages } = this.state;
+    const { messages, name } = this.state;
     const nData = _.cloneDeep(data);
     nData.id = `id_${messages.length}`;
+    nData.name = name === data.name ? 'Me' : data.name;
+    nData.me = name === data.name;
     messages.push(nData);
     this.setState({ messages }, () => {
       this.container.scrollTop = this.container.offsetHeight;
     });
   }
 
+  @autobind
+  handlePong(ping) {
+    this.setState({ ping });
+  }
+
   render() {
-    const { value, messages } = this.state;
+    const {
+      name,
+      value,
+      messages,
+      ping,
+    } = this.state;
     return (
       <div style={inlineStyles.mainContainer}>
+        <div style={inlineStyles.statusContainer}>
+          <span style={inlineStyles.nameStyle}>{name}</span>
+          <span style={inlineStyles.pingStyle}>{ping}ms</span>
+        </div>
         <div ref={(r) => { this.container = r; }} style={inlineStyles.messagesContainer}>
           {messages.map(message => (
             <p style={inlineStyles.paragraphStyle} key={message.id}>

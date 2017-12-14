@@ -61,7 +61,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "8e6863d87b0316142121"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "1458aabae6bdc3e5b3c4"; // eslint-disable-line no-unused-vars
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
@@ -40042,8 +40042,20 @@ var inlineStyles = {
     width: '98%',
     margin: '1%'
   },
+  statusContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  nameStyle: {
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
+  pingStyle: {
+    fontSize: 10
+  },
   messagesContainer: {
-    height: '70%',
+    height: '65%',
     width: '100%',
     overflow: 'auto',
     border: '1px solid grey',
@@ -40071,6 +40083,13 @@ var inlineStyles = {
   }
 };
 
+var socketOptions = {
+  reconnectionDelay: 5000,
+  reconnectionDelayMax: 10000,
+  transports: ['websocket', 'polling'],
+  forceNew: true
+};
+
 var Chat = _wrapComponent('Chat')((_class = function (_Component) {
   (0, _inherits3.default)(Chat, _Component);
 
@@ -40082,16 +40101,16 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
     _this.state = {
       name: _names2.default[Math.floor(Math.random() * _names2.default.length)],
       value: '',
-      messages: []
+      messages: [],
+      ping: 0
     };
-    _this.SOCKET = (0, _socket2.default)("http://localhost:3030", {
-      reconnectionDelay: 5000,
-      reconnectionDelayMax: 10000,
-      transports: ['websocket', 'polling'],
-      forceNew: true
-    });
+    _this.io = (0, _socket2.default)("http://localhost:3030", socketOptions);
+    _this.io.on('pong', _this.handlePong);
 
-    _this.SOCKET.on('message', _this.handleMessage);
+    _this.receiver = (0, _socket2.default)("http://localhost:3030" + '/receiver', socketOptions);
+    _this.receiver.on('message', _this.handleMessage);
+
+    _this.sender = (0, _socket2.default)("http://localhost:3030" + '/sender', socketOptions);
     return _this;
   }
 
@@ -40109,23 +40128,16 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
 
       var _state = this.state,
           name = _state.name,
-          value = _state.value,
-          messages = _state.messages;
+          value = _state.value;
       var keyCode = ev.keyCode;
 
       if (keyCode === 13) {
         ev.preventDefault();
-        messages.push({
-          id: 'id_' + messages.length,
-          name: 'Me',
-          text: value,
-          me: true
-        });
-        this.SOCKET.emit('message', {
+        this.sender.emit('message', {
           name: name,
           text: value
         });
-        this.setState({ value: '', messages: messages }, function () {
+        this.setState({ value: '' }, function () {
           _this2.container.scrollTop = _this2.container.offsetHeight;
         });
       }
@@ -40135,27 +40147,53 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
     value: function handleMessage(data) {
       var _this3 = this;
 
-      var messages = this.state.messages;
+      var _state2 = this.state,
+          messages = _state2.messages,
+          name = _state2.name;
 
       var nData = _lodash2.default.cloneDeep(data);
       nData.id = 'id_' + messages.length;
+      nData.name = name === data.name ? 'Me' : data.name;
+      nData.me = name === data.name;
       messages.push(nData);
       this.setState({ messages: messages }, function () {
         _this3.container.scrollTop = _this3.container.offsetHeight;
       });
     }
   }, {
+    key: 'handlePong',
+    value: function handlePong(ping) {
+      this.setState({ ping: ping });
+    }
+  }, {
     key: 'render',
     value: function render() {
       var _this4 = this;
 
-      var _state2 = this.state,
-          value = _state2.value,
-          messages = _state2.messages;
+      var _state3 = this.state,
+          name = _state3.name,
+          value = _state3.value,
+          messages = _state3.messages,
+          ping = _state3.ping;
 
       return _react3.default.createElement(
         'div',
         { style: inlineStyles.mainContainer },
+        _react3.default.createElement(
+          'div',
+          { style: inlineStyles.statusContainer },
+          _react3.default.createElement(
+            'span',
+            { style: inlineStyles.nameStyle },
+            name
+          ),
+          _react3.default.createElement(
+            'span',
+            { style: inlineStyles.pingStyle },
+            ping,
+            'ms'
+          )
+        ),
         _react3.default.createElement(
           'div',
           { ref: function ref(r) {
@@ -40165,15 +40203,11 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
             return _react3.default.createElement(
               'p',
               { style: inlineStyles.paragraphStyle, key: message.id },
-              message.me ? _react3.default.createElement(
+              _react3.default.createElement(
                 'span',
-                { style: inlineStyles.meStyle },
+                { style: message.me ? inlineStyles.meStyle : inlineStyles.strangerStyle },
                 message.name,
-                ': '
-              ) : _react3.default.createElement(
-                'span',
-                { style: inlineStyles.strangerStyle },
-                'Stranger: '
+                ':\xA0'
               ),
               message.text
             );
@@ -40194,7 +40228,7 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
     }
   }]);
   return Chat;
-}(_react2.Component), (_applyDecoratedDescriptor(_class.prototype, 'onChange', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'onChange'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'onKeyDown', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'onKeyDown'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handleMessage', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handleMessage'), _class.prototype)), _class));
+}(_react2.Component), (_applyDecoratedDescriptor(_class.prototype, 'onChange', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'onChange'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'onKeyDown', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'onKeyDown'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handleMessage', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handleMessage'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handlePong', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handlePong'), _class.prototype)), _class));
 
 var _default = Chat;
 exports.default = _default;
@@ -40206,6 +40240,8 @@ var _temp = function () {
   }
 
   __REACT_HOT_LOADER__.register(inlineStyles, 'inlineStyles', '/home/done/WebstormProjects/socket.io-redis-poc/src/Chat/index.js');
+
+  __REACT_HOT_LOADER__.register(socketOptions, 'socketOptions', '/home/done/WebstormProjects/socket.io-redis-poc/src/Chat/index.js');
 
   __REACT_HOT_LOADER__.register(Chat, 'Chat', '/home/done/WebstormProjects/socket.io-redis-poc/src/Chat/index.js');
 
