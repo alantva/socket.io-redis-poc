@@ -87,6 +87,12 @@ namespaceSender.on('connection', function (socket) {
 
   socket.on('message', function (data) {
     console.log('\nSocket Bot: ' + data.name + ' enviou uma mensagem.');
+    namespaceReceiver.adapter.allRooms(function (err, rooms) {
+      namespaceReceiver.adapter.clients([rooms[0]], function (erro, clients) {
+        console.log('clients', clients);
+      });
+      console.log('rooms', rooms);
+    });
     namespaceReceiver.emit('message', data);
   });
 });
