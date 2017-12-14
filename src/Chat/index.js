@@ -89,10 +89,7 @@ class Chat extends Component {
     const { keyCode } = ev;
     if (keyCode === 13) {
       ev.preventDefault();
-      this.sender.emit('message', {
-        name,
-        text: value,
-      });
+      this.sender.emit('message', { name, text: value });
       this.setState({ value: '' }, () => {
         this.container.scrollTop = this.container.offsetHeight;
       });
