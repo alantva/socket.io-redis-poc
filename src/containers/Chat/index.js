@@ -1,15 +1,20 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import autobind from 'autobind-decorator';
 import io from 'socket.io-client';
 import _ from 'lodash';
 
-import names from './names';
-
 const inlineStyles = {
   mainContainer: {
-    height: '98%',
-    width: '98%',
-    margin: '1%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 'calc(25% - 22px)',
+    minHeight: 'calc(25% - 22px)',
+    backgroundColor: '#cecece',
+    padding: 10,
+    border: '1px solid #bebebe',
   },
   statusContainer: {
     display: 'flex',
@@ -63,7 +68,6 @@ class Chat extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: names[Math.floor(Math.random() * names.length)],
       value: '',
       messages: [],
       ping: 0,
@@ -115,12 +119,8 @@ class Chat extends Component {
   }
 
   render() {
-    const {
-      name,
-      value,
-      messages,
-      ping,
-    } = this.state;
+    const { value, messages, ping } = this.state;
+    const { name } = this.props;
     return (
       <div style={inlineStyles.mainContainer}>
         <div style={inlineStyles.statusContainer}>
@@ -150,5 +150,9 @@ class Chat extends Component {
     );
   }
 }
+
+Chat.propTypes = {
+  name: PropTypes.string.isRequired,
+};
 
 export default Chat;
