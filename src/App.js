@@ -13,8 +13,9 @@ const inlineStyles = {
     flexWrap: 'wrap',
     height: '100%',
     width: '100%',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    overflow: 'auto',
   },
 };
 
@@ -43,7 +44,7 @@ class App extends Component {
   renderClients() {
     const { clients } = this.state;
     return clients.map(client => (
-      <Chat {...client} />
+      <Chat {...client} onLogout={this.removeClient} />
     ));
   }
 

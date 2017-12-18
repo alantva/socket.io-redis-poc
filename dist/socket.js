@@ -9,6 +9,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var io = require('socket.io'); /*  eslint no-console: 0 */
 
 var redis = require('socket.io-redis');
+var cookieParser = require('socket.io-cookie');
 
 module.exports = function (opts) {
   var server = opts.server || null;
@@ -21,6 +22,7 @@ module.exports = function (opts) {
   var ioOpts = _lodash2.default.extend({}, defaultOpts, serverOpts);
   var SocketServer = io(server, ioOpts);
   SocketServer.adapter(redis({ host: process.env.REDIS_URL, port: process.env.REDIS_PORT }));
+  SocketServer.use(cookieParser);
   return SocketServer;
 };
 ;

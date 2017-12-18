@@ -8,11 +8,11 @@ const inlineStyles = {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 'calc(25% - 22px)',
-    minHeight: 'calc(25% - 22px)',
+    width: 'calc(25% - 20px)',
+    height: 'calc(33.3% - 20px)',
     backgroundColor: '#cecece',
     padding: 10,
-    border: '1px solid #bebebe',
+    border: 'none',
   },
 };
 

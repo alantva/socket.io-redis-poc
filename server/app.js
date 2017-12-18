@@ -10,6 +10,7 @@ import config from '../webpack.config';
 require('dotenv/config');
 
 const SocketServer = require('./socket');
+const distribution = require('./distribution');
 
 const app = express();
 const port = process.env.PORT || 3030;
@@ -47,32 +48,60 @@ const server = app.listen(port, (err) => {
 
 const SS = new SocketServer({ server });
 
-SS.on('connection', (socket) => {
-  console.log(`\nBot: ${socket.id} está online. :)`);
+if (process.env.pm_id === '0') {
+  distribution.clear();
+}
+
+SS.on('connection', () => {});
+const namespaceUser = SS.of('/user');
+const namespaceCustomer = SS.of('/customer');
+
+namespaceUser.on('connection', async (socket) => {
+  /* Lendo o Cookie */
+  const { _SCClientInfo } = socket.request.headers.cookie;
+  const clientInfo = JSON.parse(_SCClientInfo);
+  console.log(`\nUser Bot: ${clientInfo.name} está online. :)`);
+
+  /* Criando o registro no Redis */
+  await distribution.setClient(clientInfo);
+  const User = await distribution.getClient(clientInfo);
+  console.log(`\nUser Bot: ${User.name} foi registrado. :)`);
+
+  socket.on('message', (data) => {
+    console.log(`\nUser Bot: ${data.name} enviou uma mensagem.`);
+    namespaceCustomer.emit('message', data);
+    socket.emit('message', data);
+  });
 
   socket.on('disconnect', () => {
-    console.log(`\nBot: ${socket.id} se desconectou. :(`);
+    console.log(`\nUser Bot: ${User.name} se desconectou. :(`);
+    if (distribution.removeClient(clientInfo)) {
+      console.log(`\nUser Bot: ${User.name} teve seu registro removido. :)`);
+    }
   });
 });
 
-const namespaceSender = SS.of('/sender');
-const namespaceReceiver = SS.of('/receiver');
+namespaceCustomer.on('connection', async (socket) => {
+  /* Lendo o Cookie */
+  const { _SCClientInfo } = socket.request.headers.cookie;
+  const clientInfo = JSON.parse(_SCClientInfo);
+  console.log(`\nCustomer Bot: ${clientInfo.name} está online. :)`);
 
-namespaceReceiver.on('connection', (socket) => {
-  console.log(`\nReceiver Bot: ${socket.id} está online. :)`, process.pid);
-});
-
-namespaceSender.on('connection', (socket) => {
-  console.log(`\nSender Bot: ${socket.id} está online. :)`, process.pid);
+  /* Criando o registro no Redis */
+  await distribution.setClient(clientInfo);
+  const Customer = await distribution.getClient(clientInfo);
+  console.log(`\nCustomer Bot: ${Customer.name} foi registrado. :)`);
 
   socket.on('message', (data) => {
-    console.log(`\nSocket Bot: ${data.name} enviou uma mensagem.`);
-    namespaceReceiver.adapter.allRooms((err, rooms) => {
-      namespaceReceiver.adapter.clients([rooms[0]], (erro, clients) => {
-        console.log('clients', clients);
-      });
-      console.log('rooms', rooms);
-    });
-    namespaceReceiver.emit('message', data);
+    console.log(`\nCustomer Bot: ${data.name} enviou uma mensagem.`);
+    namespaceUser.emit('message', data);
+    socket.emit('message', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`\nCustomer Bot: ${Customer.name} se desconectou. :(`);
+    if (distribution.removeClient(clientInfo)) {
+      console.log(`\nCustomer Bot: ${Customer.name} teve seu registro removido. :)`);
+    }
   });
 });

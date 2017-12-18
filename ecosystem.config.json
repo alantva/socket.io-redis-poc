@@ -3,7 +3,7 @@
     {
       "name": "socket.io-redis",
       "script": "dist/app.js",
-      "instances": "max",
+      "instances": "2",
       "exec_mode": "cluster"
     }
   ]

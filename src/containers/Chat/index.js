@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import autobind from 'autobind-decorator';
+import RaisedButton from 'material-ui/RaisedButton';
 import io from 'socket.io-client';
 import _ from 'lodash';
+
+import './chat.css';
 
 const inlineStyles = {
   mainContainer: {
@@ -10,16 +13,16 @@ const inlineStyles = {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 'calc(25% - 22px)',
-    minHeight: 'calc(25% - 22px)',
-    backgroundColor: '#cecece',
+    width: 'calc(25% - 20px)',
+    height: 'calc(33.3% - 20px)',
     padding: 10,
-    border: '1px solid #bebebe',
+    border: 'none',
   },
   statusContainer: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    width: '100%',
   },
   nameStyle: {
     fontSize: 16,
@@ -28,12 +31,15 @@ const inlineStyles = {
   pingStyle: {
     fontSize: 10,
   },
+  dcStyle: {
+    minWidth: 70,
+  },
   messagesContainer: {
     height: '65%',
     width: '100%',
     overflow: 'auto',
     border: '1px solid grey',
-    backgroundColor: '#cecece',
+    backgroundColor: 'azure',
   },
   paragraphStyle: {
     padding: '0 10px',
@@ -46,12 +52,15 @@ const inlineStyles = {
   },
   textareaContainer: {
     height: '30%',
+    width: '100%',
   },
   textareaStyle: {
-    height: '98%',
-    width: '98%',
+    height: '100%',
+    width: '100%',
     overflow: 'auto',
-    padding: '1%',
+    padding: '0',
+    margin: '0',
+    border: 'none',
     resize: 'none',
     backgroundColor: '#ededed',
   },
@@ -72,13 +81,19 @@ class Chat extends Component {
       messages: [],
       ping: 0,
     };
-    this.io = io(process.env.API_URL, socketOptions);
-    this.io.on('pong', this.handlePong);
+    this.connection = io(process.env.API_URL, socketOptions);
+    this.connection.on('pong', this.handlePong);
+  }
 
-    this.receiver = io(`${process.env.API_URL}/receiver`, socketOptions);
-    this.receiver.on('message', this.handleMessage);
+  componentWillMount() {
+    const { type } = this.props;
+    this.namespace = io(`${process.env.API_URL}/${type}`, socketOptions);
+    this.namespace.on('message', this.handleMessage);
+  }
 
-    this.sender = io(`${process.env.API_URL}/sender`, socketOptions);
+  componentWillUnmount() {
+    this.namespace.disconnect();
+    this.connection.disconnect();
   }
 
   @autobind
@@ -89,11 +104,12 @@ class Chat extends Component {
 
   @autobind
   onKeyDown(ev) {
-    const { name, value } = this.state;
+    const { value } = this.state;
+    const { name } = this.props;
     const { keyCode } = ev;
     if (keyCode === 13) {
       ev.preventDefault();
-      this.sender.emit('message', { name, text: value });
+      this.namespace.emit('message', { name, text: value });
       this.setState({ value: '' }, () => {
         this.container.scrollTop = this.container.offsetHeight;
       });
@@ -102,7 +118,8 @@ class Chat extends Component {
 
   @autobind
   handleMessage(data) {
-    const { messages, name } = this.state;
+    const { messages } = this.state;
+    const { name } = this.props;
     const nData = _.cloneDeep(data);
     nData.id = `id_${messages.length}`;
     nData.name = name === data.name ? 'Me' : data.name;
@@ -118,14 +135,26 @@ class Chat extends Component {
     this.setState({ ping });
   }
 
+  @autobind
+  handleDisconnect(ev) {
+    ev.preventDefault();
+    const { id } = this.props;
+    this.props.onLogout({ id });
+  }
+
   render() {
     const { value, messages, ping } = this.state;
-    const { name } = this.props;
+    const { name, type } = this.props;
     return (
-      <div style={inlineStyles.mainContainer}>
+      <div style={inlineStyles.mainContainer} className={type}>
         <div style={inlineStyles.statusContainer}>
           <span style={inlineStyles.nameStyle}>{name}</span>
           <span style={inlineStyles.pingStyle}>{ping}ms</span>
+          <RaisedButton
+            onClick={this.handleDisconnect}
+            style={inlineStyles.dcStyle}
+            label="Sair"
+          />
         </div>
         <div ref={(r) => { this.container = r; }} style={inlineStyles.messagesContainer}>
           {messages.map(message => (
@@ -152,7 +181,10 @@ class Chat extends Component {
 }
 
 Chat.propTypes = {
+  id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
+  onLogout: PropTypes.func.isRequired,
 };
 
 export default Chat;
