@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.clear = exports.removeClient = exports.getClient = exports.setClient = undefined;
+exports.clear = exports.remove = exports.get = exports.set = undefined;
 
 var _regenerator = require('babel-runtime/regenerator');
 
@@ -24,7 +24,7 @@ var Redis = new _ioredis2.default({
   host: process.env.REDIS_URL
 });
 
-var getClient = function getClient(data) {
+var get = function get(data) {
   var id = data.id,
       type = data.type;
 
@@ -38,7 +38,7 @@ var getClient = function getClient(data) {
     });
   });
 };
-var setClient = function () {
+var set = function () {
   var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(data) {
     var id, name, type;
     return _regenerator2.default.wrap(function _callee$(_context) {
@@ -47,7 +47,7 @@ var setClient = function () {
           case 0:
             id = data.id, name = data.name, type = data.type;
             return _context.abrupt('return', new Promise(function (resolve, reject) {
-              Redis.hmset('w-api:' + type + ':' + id, 'id', id, 'name', name, function (err) {
+              Redis.hmset('w-api:' + type + ':' + id, ['id', id, 'name', name, 'type', type], function (err) {
                 if (err) {
                   reject(err);
                 } else {
@@ -64,11 +64,11 @@ var setClient = function () {
     }, _callee, undefined);
   }));
 
-  return function setClient(_x) {
+  return function set(_x) {
     return _ref.apply(this, arguments);
   };
 }();
-var removeClient = function removeClient(data) {
+var remove = function remove(data) {
   var id = data.id,
       type = data.type;
 
@@ -84,19 +84,19 @@ var removeClient = function removeClient(data) {
 };
 var clear = function clear() {
   return new Promise(function (resolve, reject) {
-    Redis.keys('w-api:*', function (err, keys) {
-      if (err) {
-        reject(err);
+    Redis.keys('w-api:*', function (e, keys) {
+      if (e) {
+        reject(e);
       } else {
         var pipeline = Redis.pipeline();
         keys.forEach(function (key) {
           pipeline.del(key);
         });
-        pipeline.exec(function (err2) {
+        pipeline.exec(function (err) {
           if (err) {
-            reject(err2);
+            reject(err);
           } else {
-            console.log('Distribution: Redis clear!');
+            console.log('Client.Redis: Redis clear!'); // eslint-disable-line
             resolve();
           }
         });
@@ -105,9 +105,9 @@ var clear = function clear() {
   });
 };
 
-exports.setClient = setClient;
-exports.getClient = getClient;
-exports.removeClient = removeClient;
+exports.set = set;
+exports.get = get;
+exports.remove = remove;
 exports.clear = clear;
 ;
 
@@ -116,16 +116,16 @@ var _temp = function () {
     return;
   }
 
-  __REACT_HOT_LOADER__.register(Redis, 'Redis', 'server/distribution.js');
+  __REACT_HOT_LOADER__.register(Redis, 'Redis', 'server/socket/Client.Redis.js');
 
-  __REACT_HOT_LOADER__.register(getClient, 'getClient', 'server/distribution.js');
+  __REACT_HOT_LOADER__.register(get, 'get', 'server/socket/Client.Redis.js');
 
-  __REACT_HOT_LOADER__.register(setClient, 'setClient', 'server/distribution.js');
+  __REACT_HOT_LOADER__.register(set, 'set', 'server/socket/Client.Redis.js');
 
-  __REACT_HOT_LOADER__.register(removeClient, 'removeClient', 'server/distribution.js');
+  __REACT_HOT_LOADER__.register(remove, 'remove', 'server/socket/Client.Redis.js');
 
-  __REACT_HOT_LOADER__.register(clear, 'clear', 'server/distribution.js');
+  __REACT_HOT_LOADER__.register(clear, 'clear', 'server/socket/Client.Redis.js');
 }();
 
 ;
-//# sourceMappingURL=distribution.js.map
+//# sourceMappingURL=Client.Redis.js.map

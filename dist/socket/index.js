@@ -11,6 +11,9 @@ var io = require('socket.io'); /*  eslint no-console: 0 */
 var redis = require('socket.io-redis');
 var cookieParser = require('socket.io-cookie');
 
+var User = require('./User');
+var Customer = require('./Customer');
+
 module.exports = function (opts) {
   var server = opts.server || null;
   var serverOpts = opts.serverOpts || {};
@@ -23,6 +26,15 @@ module.exports = function (opts) {
   var SocketServer = io(server, ioOpts);
   SocketServer.adapter(redis({ host: process.env.REDIS_URL, port: process.env.REDIS_PORT }));
   SocketServer.use(cookieParser);
+
+  SocketServer.on('connection', function () {});
+
+  var namespaceUser = SocketServer.of('/user');
+  var namespaceCustomer = SocketServer.of('/customer');
+
+  User(namespaceUser, namespaceCustomer);
+  Customer(namespaceCustomer, namespaceUser);
+
   return SocketServer;
 };
 ;
@@ -34,4 +46,4 @@ var _temp = function () {
 }();
 
 ;
-//# sourceMappingURL=socket.js.map
+//# sourceMappingURL=index.js.map

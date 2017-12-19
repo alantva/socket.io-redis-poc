@@ -5,10 +5,10 @@ const Redis = new IORedis({
   host: process.env.REDIS_URL,
 });
 
-const getClient = (data) => {
-  const { id, type } = data;
+const pop = (data) => {
+  const { type } = data;
   return new Promise((resolve, reject) => {
-    Redis.hgetall(`w-api:${type}:${id}`, (err, result) => {
+    Redis.lpop(`w-api:queue:${type}`, (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -17,10 +17,10 @@ const getClient = (data) => {
     });
   });
 };
-const setClient = async (data) => {
-  const { id, name, type } = data;
+const push = async (data) => {
+  const { id, type } = data;
   return new Promise((resolve, reject) => {
-    Redis.hmset(`w-api:${type}:${id}`, 'id', id, 'name', name, (err) => {
+    Redis.rpush(`w-api:queue:${type}`, id, (err) => {
       if (err) {
         reject(err);
       } else {
@@ -29,10 +29,10 @@ const setClient = async (data) => {
     });
   });
 };
-const removeClient = (data) => {
+const remove = (data) => {
   const { id, type } = data;
   return new Promise((resolve, reject) => {
-    Redis.del(`w-api:${type}:${id}`, (err) => {
+    Redis.lrem(`w-api:${type}`, id, (err) => {
       if (err) {
         reject(err);
       } else {
@@ -42,19 +42,19 @@ const removeClient = (data) => {
   });
 };
 const clear = () => new Promise((resolve, reject) => {
-  Redis.keys('w-api:*', (err, keys) => {
-    if (err) {
-      reject(err);
+  Redis.keys('w-api:queue:*', (e, keys) => {
+    if (e) {
+      reject(e);
     } else {
       const pipeline = Redis.pipeline();
       keys.forEach((key) => {
         pipeline.del(key);
       });
-      pipeline.exec((err2) => {
+      pipeline.exec((err) => {
         if (err) {
-          reject(err2);
+          reject(err);
         } else {
-          console.log('Distribution: Redis clear!');
+          console.log('Client.Redis: Redis clear!'); // eslint-disable-line
           resolve();
         }
       });
@@ -63,8 +63,8 @@ const clear = () => new Promise((resolve, reject) => {
 });
 
 export {
-  setClient,
-  getClient,
-  removeClient,
+  pop,
+  push,
+  remove,
   clear,
 };

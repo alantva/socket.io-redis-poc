@@ -10,7 +10,7 @@ import config from '../webpack.config';
 require('dotenv/config');
 
 const SocketServer = require('./socket');
-const distribution = require('./distribution');
+const ClientRedis = require('./socket/Client.Redis');
 
 const app = express();
 const port = process.env.PORT || 3030;
@@ -46,62 +46,8 @@ const server = app.listen(port, (err) => {
 
 /* socket */
 
-const SS = new SocketServer({ server });
+SocketServer({ server });
 
 if (process.env.pm_id === '0') {
-  distribution.clear();
+  ClientRedis.clear();
 }
-
-SS.on('connection', () => {});
-const namespaceUser = SS.of('/user');
-const namespaceCustomer = SS.of('/customer');
-
-namespaceUser.on('connection', async (socket) => {
-  /* Lendo o Cookie */
-  const { _SCClientInfo } = socket.request.headers.cookie;
-  const clientInfo = JSON.parse(_SCClientInfo);
-  console.log(`\nUser Bot: ${clientInfo.name} está online. :)`);
-
-  /* Criando o registro no Redis */
-  await distribution.setClient(clientInfo);
-  const User = await distribution.getClient(clientInfo);
-  console.log(`\nUser Bot: ${User.name} foi registrado. :)`);
-
-  socket.on('message', (data) => {
-    console.log(`\nUser Bot: ${data.name} enviou uma mensagem.`);
-    namespaceCustomer.emit('message', data);
-    socket.emit('message', data);
-  });
-
-  socket.on('disconnect', () => {
-    console.log(`\nUser Bot: ${User.name} se desconectou. :(`);
-    if (distribution.removeClient(clientInfo)) {
-      console.log(`\nUser Bot: ${User.name} teve seu registro removido. :)`);
-    }
-  });
-});
-
-namespaceCustomer.on('connection', async (socket) => {
-  /* Lendo o Cookie */
-  const { _SCClientInfo } = socket.request.headers.cookie;
-  const clientInfo = JSON.parse(_SCClientInfo);
-  console.log(`\nCustomer Bot: ${clientInfo.name} está online. :)`);
-
-  /* Criando o registro no Redis */
-  await distribution.setClient(clientInfo);
-  const Customer = await distribution.getClient(clientInfo);
-  console.log(`\nCustomer Bot: ${Customer.name} foi registrado. :)`);
-
-  socket.on('message', (data) => {
-    console.log(`\nCustomer Bot: ${data.name} enviou uma mensagem.`);
-    namespaceUser.emit('message', data);
-    socket.emit('message', data);
-  });
-
-  socket.on('disconnect', () => {
-    console.log(`\nCustomer Bot: ${Customer.name} se desconectou. :(`);
-    if (distribution.removeClient(clientInfo)) {
-      console.log(`\nCustomer Bot: ${Customer.name} teve seu registro removido. :)`);
-    }
-  });
-});
