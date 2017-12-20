@@ -29,7 +29,7 @@ var get = function get(data) {
       type = data.type;
 
   return new Promise(function (resolve, reject) {
-    Redis.hgetall('w-api:' + type + ':' + id, function (err, result) {
+    Redis.hgetall('w-api:client:' + type + ':' + id, function (err, result) {
       if (err) {
         reject(err);
       } else {
@@ -40,14 +40,15 @@ var get = function get(data) {
 };
 var set = function () {
   var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(data) {
-    var id, name, type;
+    var id, name, type, socketID;
     return _regenerator2.default.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            id = data.id, name = data.name, type = data.type;
+            id = data.id, name = data.name, type = data.type, socketID = data.socketID; // eslint-disable-line
+
             return _context.abrupt('return', new Promise(function (resolve, reject) {
-              Redis.hmset('w-api:' + type + ':' + id, ['id', id, 'name', name, 'type', type], function (err) {
+              Redis.hmset('w-api:client:' + type + ':' + id, ['id', id, 'name', name, 'type', type, 'socketID', socketID], function (err) {
                 if (err) {
                   reject(err);
                 } else {
@@ -73,7 +74,7 @@ var remove = function remove(data) {
       type = data.type;
 
   return new Promise(function (resolve, reject) {
-    Redis.del('w-api:' + type + ':' + id, function (err) {
+    Redis.del('w-api:client:' + type + ':' + id, function (err) {
       if (err) {
         reject(err);
       } else {
@@ -84,7 +85,7 @@ var remove = function remove(data) {
 };
 var clear = function clear() {
   return new Promise(function (resolve, reject) {
-    Redis.keys('w-api:*', function (e, keys) {
+    Redis.keys('w-api:client:*', function (e, keys) {
       if (e) {
         reject(e);
       } else {
@@ -96,7 +97,7 @@ var clear = function clear() {
           if (err) {
             reject(err);
           } else {
-            console.log('Client.Redis: Redis clear!'); // eslint-disable-line
+            console.log('Client.Redis: Redis client clear!'); // eslint-disable-line
             resolve();
           }
         });

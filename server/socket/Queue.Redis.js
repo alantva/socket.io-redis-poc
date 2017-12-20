@@ -32,7 +32,7 @@ const push = async (data) => {
 const remove = (data) => {
   const { id, type } = data;
   return new Promise((resolve, reject) => {
-    Redis.lrem(`w-api:${type}`, id, (err) => {
+    Redis.lrem(`w-api:queue:${type}`, 1, id, (err) => {
       if (err) {
         reject(err);
       } else {
@@ -54,7 +54,7 @@ const clear = () => new Promise((resolve, reject) => {
         if (err) {
           reject(err);
         } else {
-          console.log('Client.Redis: Redis clear!'); // eslint-disable-line
+          console.log('Queue.Redis: Redis queues clear!'); // eslint-disable-line
           resolve();
         }
       });

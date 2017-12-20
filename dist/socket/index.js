@@ -11,8 +11,8 @@ var io = require('socket.io'); /*  eslint no-console: 0 */
 var redis = require('socket.io-redis');
 var cookieParser = require('socket.io-cookie');
 
-var User = require('./User');
-var Customer = require('./Customer');
+var UserListener = require('./User');
+var CustomerListener = require('./Customer');
 
 module.exports = function (opts) {
   var server = opts.server || null;
@@ -29,11 +29,13 @@ module.exports = function (opts) {
 
   SocketServer.on('connection', function () {});
 
-  var namespaceUser = SocketServer.of('/user');
-  var namespaceCustomer = SocketServer.of('/customer');
+  var namespaces = {
+    user: SocketServer.of('/user'),
+    customer: SocketServer.of('/customer')
+  };
 
-  User(namespaceUser, namespaceCustomer);
-  Customer(namespaceCustomer, namespaceUser);
+  UserListener(namespaces);
+  CustomerListener(namespaces);
 
   return SocketServer;
 };

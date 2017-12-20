@@ -24,13 +24,16 @@ var _webpack3 = require('../webpack.config');
 
 var _webpack4 = _interopRequireDefault(_webpack3);
 
+var _Client = require('./socket/Client.Redis');
+
+var _Queue = require('./socket/Queue.Redis');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* eslint no-console: 0 */
 require('dotenv/config');
 
 var SocketServer = require('./socket');
-var ClientRedis = require('./socket/Client.Redis');
 
 var app = (0, _express2.default)();
 var port = process.env.PORT || 3030;
@@ -69,7 +72,8 @@ var server = app.listen(port, function (err) {
 SocketServer({ server: server });
 
 if (process.env.pm_id === '0') {
-  ClientRedis.clear();
+  (0, _Client.clear)();
+  (0, _Queue.clear)();
 }
 ;
 

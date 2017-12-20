@@ -6,11 +6,12 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 
 import config from '../webpack.config';
+import { clear as ClearClient } from './socket/Client.Redis';
+import { clear as ClearQueue } from './socket/Queue.Redis';
 
 require('dotenv/config');
 
 const SocketServer = require('./socket');
-const ClientRedis = require('./socket/Client.Redis');
 
 const app = express();
 const port = process.env.PORT || 3030;
@@ -49,5 +50,6 @@ const server = app.listen(port, (err) => {
 SocketServer({ server });
 
 if (process.env.pm_id === '0') {
-  ClientRedis.clear();
+  ClearClient();
+  ClearQueue();
 }

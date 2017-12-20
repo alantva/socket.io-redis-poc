@@ -5,8 +5,8 @@ const io = require('socket.io');
 const redis = require('socket.io-redis');
 const cookieParser = require('socket.io-cookie');
 
-const User = require('./User');
-const Customer = require('./Customer');
+const UserListener = require('./User');
+const CustomerListener = require('./Customer');
 
 module.exports = (opts) => {
   const server = opts.server || null;
@@ -23,11 +23,13 @@ module.exports = (opts) => {
 
   SocketServer.on('connection', () => {});
 
-  const namespaceUser = SocketServer.of('/user');
-  const namespaceCustomer = SocketServer.of('/customer');
+  const namespaces = {
+    user: SocketServer.of('/user'),
+    customer: SocketServer.of('/customer'),
+  };
 
-  User(namespaceUser, namespaceCustomer);
-  Customer(namespaceCustomer, namespaceUser);
+  UserListener(namespaces);
+  CustomerListener(namespaces);
 
   return SocketServer;
 };

@@ -8,7 +8,7 @@ const Redis = new IORedis({
 const get = (data) => {
   const { id, type } = data;
   return new Promise((resolve, reject) => {
-    Redis.hgetall(`w-api:${type}:${id}`, (err, result) => {
+    Redis.hgetall(`w-api:client:${type}:${id}`, (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -18,15 +18,17 @@ const get = (data) => {
   });
 };
 const set = async (data) => {
-  const { id, name, type } = data;
+  const { id, name, type, socketID } = data; // eslint-disable-line
   return new Promise((resolve, reject) => {
-    Redis.hmset(`w-api:${type}:${id}`, [
+    Redis.hmset(`w-api:client:${type}:${id}`, [
       'id',
       id,
       'name',
       name,
       'type',
       type,
+      'socketID',
+      socketID,
     ], (err) => {
       if (err) {
         reject(err);
@@ -39,7 +41,7 @@ const set = async (data) => {
 const remove = (data) => {
   const { id, type } = data;
   return new Promise((resolve, reject) => {
-    Redis.del(`w-api:${type}:${id}`, (err) => {
+    Redis.del(`w-api:client:${type}:${id}`, (err) => {
       if (err) {
         reject(err);
       } else {
@@ -49,7 +51,7 @@ const remove = (data) => {
   });
 };
 const clear = () => new Promise((resolve, reject) => {
-  Redis.keys('w-api:*', (e, keys) => {
+  Redis.keys('w-api:client:*', (e, keys) => {
     if (e) {
       reject(e);
     } else {
@@ -61,7 +63,7 @@ const clear = () => new Promise((resolve, reject) => {
         if (err) {
           reject(err);
         } else {
-          console.log('Client.Redis: Redis clear!'); // eslint-disable-line
+          console.log('Client.Redis: Redis client clear!'); // eslint-disable-line
           resolve();
         }
       });
