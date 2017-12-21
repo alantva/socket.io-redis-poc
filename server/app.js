@@ -8,6 +8,7 @@ import webpackHotMiddleware from 'webpack-hot-middleware';
 import config from '../webpack.config';
 import { clear as ClearClient } from './socket/Client.Redis';
 import { clear as ClearQueue } from './socket/Queue.Redis';
+import { clear as ClearRoom } from './socket/Room.Redis';
 
 require('dotenv/config');
 
@@ -52,4 +53,5 @@ SocketServer({ server });
 if (process.env.pm_id === '0') {
   ClearClient();
   ClearQueue();
+  ClearRoom();
 }

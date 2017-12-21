@@ -1,8 +1,10 @@
 import { remove as ClientRemove } from './Client.Redis';
 import { push as QueuePush, remove as QueueRemove } from './Queue.Redis';
+import { remove as RoomRemove } from './Room.Redis';
 import {
   saveRegister as ClientSaveRegister,
-  assignPartner as ClientAssignPartner,
+  assignPartners as ClientAssignPartners,
+  assignToRoom as ClientAssignToRoom,
 } from './Client';
 
 module.exports = (namespaces) => {
@@ -12,18 +14,21 @@ module.exports = (namespaces) => {
     /* Assign the client to a queue */
     await QueuePush(client);
     /* Assign the client to a partner */
-    const partner = await ClientAssignPartner(client);
+    const partner = await ClientAssignPartners(client);
 
     if (partner) {
       /* Unassign the client to a queue */
       await QueueRemove(client);
 
-      socket.on('message', (data) => {
-        console.log(`\nCUSTOMER Bot: ${client.name} enviou uma mensagem.`); // eslint-disable-line
-        namespaces.user.to(partner.socketID).emit('message');
-        socket.emit('message', data);
-      });
+      /* Assign the client and the partner to a room */
+      await ClientAssignToRoom([client.id, partner.id]);
     }
+
+    socket.on('message', (data) => {
+      console.log(`\nCUSTOMER Bot: ${client.name} enviou uma mensagem.`); // eslint-disable-line
+      namespaces.user.to(partner.socketID).emit('message');
+      socket.emit('message', data);
+    });
 
     socket.on('disconnect', () => {
       console.log(`\nCUSTOMER Bot: ${client.name} se desconectou. :(`); // eslint-disable-line
@@ -32,6 +37,9 @@ module.exports = (namespaces) => {
       }
       if (QueueRemove(client)) {
         console.log(`\nCUSTOMER Bot: ${client.name} teve seu registro removido da fila. :)`); // eslint-disable-line
+      }
+      if (RoomRemove([client.id])) {
+        console.log(`\nCUSTOMER Bot: ${client.name} teve seu registro removido da sala. :)`); // eslint-disable-line
       }
     });
   });

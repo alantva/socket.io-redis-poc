@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.assignPartner = exports.recoverRegister = exports.saveRegister = undefined;
+exports.assignToRoom = exports.assignPartners = exports.recoverRegister = exports.saveRegister = undefined;
 
 var _regenerator = require('babel-runtime/regenerator');
 
@@ -16,6 +16,8 @@ var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 var _Client = require('./Client.Redis');
 
 var _Queue = require('./Queue.Redis');
+
+var _Room = require('./Room.Redis');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -99,7 +101,7 @@ var recoverRegister = function () {
   };
 }();
 
-var assignPartner = function () {
+var assignPartners = function () {
   var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(client) {
     var id, type, partner;
     return _regenerator2.default.wrap(function _callee3$(_context3) {
@@ -145,40 +147,82 @@ var assignPartner = function () {
 
           case 20:
             partner = _context3.sent;
-
-            if (partner) {
-              _context3.next = 23;
-              break;
-            }
-
-            return _context3.abrupt('return', null);
-
-          case 23:
             return _context3.abrupt('return', partner);
 
-          case 26:
-            _context3.prev = 26;
+          case 24:
+            _context3.prev = 24;
             _context3.t1 = _context3['catch'](0);
 
             console.error('Client.assignClient', _context3.t1);
             return _context3.abrupt('return', null);
 
-          case 30:
+          case 28:
           case 'end':
             return _context3.stop();
         }
       }
-    }, _callee3, undefined, [[0, 26]]);
+    }, _callee3, undefined, [[0, 24]]);
   }));
 
-  return function assignPartner(_x3) {
+  return function assignPartners(_x3) {
     return _ref3.apply(this, arguments);
+  };
+}();
+
+var assignToRoom = function () {
+  var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee4(clientsIDs) {
+    var roomID, clients;
+    return _regenerator2.default.wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            _context4.prev = 0;
+            _context4.next = 3;
+            return (0, _Room.set)({ clientsIDs: clientsIDs });
+
+          case 3:
+            roomID = _context4.sent;
+            _context4.next = 6;
+            return Promise.all(clientsIDs.map(function (id) {
+              return (0, _Client.get)({ id: id });
+            }));
+
+          case 6:
+            clients = _context4.sent;
+            _context4.next = 9;
+            return Promise.all(clients.map(function (client) {
+              client.roomID = roomID;
+              console.log('client', client);
+              return (0, _Client.set)(client);
+            }));
+
+          case 9:
+            return _context4.abrupt('return', true);
+
+          case 12:
+            _context4.prev = 12;
+            _context4.t0 = _context4['catch'](0);
+
+            console.error('Client.assignToRoom', _context4.t0);
+            return _context4.abrupt('return', false);
+
+          case 16:
+          case 'end':
+            return _context4.stop();
+        }
+      }
+    }, _callee4, undefined, [[0, 12]]);
+  }));
+
+  return function assignToRoom(_x4) {
+    return _ref4.apply(this, arguments);
   };
 }();
 
 exports.saveRegister = saveRegister;
 exports.recoverRegister = recoverRegister;
-exports.assignPartner = assignPartner;
+exports.assignPartners = assignPartners;
+exports.assignToRoom = assignToRoom;
 ;
 
 var _temp = function () {
@@ -190,7 +234,9 @@ var _temp = function () {
 
   __REACT_HOT_LOADER__.register(recoverRegister, 'recoverRegister', 'server/socket/Client.js');
 
-  __REACT_HOT_LOADER__.register(assignPartner, 'assignPartner', 'server/socket/Client.js');
+  __REACT_HOT_LOADER__.register(assignPartners, 'assignPartners', 'server/socket/Client.js');
+
+  __REACT_HOT_LOADER__.register(assignToRoom, 'assignToRoom', 'server/socket/Client.js');
 }();
 
 ;

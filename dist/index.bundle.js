@@ -61,7 +61,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "66243df9501e5c2e7360"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "b9c735ae52ed012a2c9c"; // eslint-disable-line no-unused-vars
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
@@ -81096,7 +81096,7 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
       var type = this.props.type;
 
       this.namespace = (0, _socket2.default)("http://localhost:3030" + '/' + type, socketOptions);
-      this.namespace.on('message', this.handleMessage, function () {});
+      this.namespace.on('message', this.handleMessage);
     }
   }, {
     key: 'componentWillUnmount',

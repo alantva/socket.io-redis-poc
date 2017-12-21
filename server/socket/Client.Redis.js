@@ -18,7 +18,7 @@ const get = (data) => {
   });
 };
 const set = async (data) => {
-  const { id, name, type, socketID } = data; // eslint-disable-line
+  const { id, name, type, socketID, roomID } = data; // eslint-disable-line
   return new Promise((resolve, reject) => {
     Redis.hmset(`w-api:client:${type}:${id}`, [
       'id',
@@ -29,6 +29,8 @@ const set = async (data) => {
       type,
       'socketID',
       socketID,
+      'roomID',
+      roomID,
     ], (err) => {
       if (err) {
         reject(err);

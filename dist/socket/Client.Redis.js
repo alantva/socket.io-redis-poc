@@ -40,15 +40,15 @@ var get = function get(data) {
 };
 var set = function () {
   var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(data) {
-    var id, name, type, socketID;
+    var id, name, type, socketID, roomID;
     return _regenerator2.default.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            id = data.id, name = data.name, type = data.type, socketID = data.socketID; // eslint-disable-line
+            id = data.id, name = data.name, type = data.type, socketID = data.socketID, roomID = data.roomID; // eslint-disable-line
 
             return _context.abrupt('return', new Promise(function (resolve, reject) {
-              Redis.hmset('w-api:client:' + type + ':' + id, ['id', id, 'name', name, 'type', type, 'socketID', socketID], function (err) {
+              Redis.hmset('w-api:client:' + type + ':' + id, ['id', id, 'name', name, 'type', type, 'socketID', socketID, 'roomID', roomID], function (err) {
                 if (err) {
                   reject(err);
                 } else {

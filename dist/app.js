@@ -28,10 +28,12 @@ var _Client = require('./socket/Client.Redis');
 
 var _Queue = require('./socket/Queue.Redis');
 
+var _Room = require('./socket/Room.Redis');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/* eslint no-console: 0 */
-require('dotenv/config');
+require('dotenv/config'); /* eslint no-console: 0 */
+
 
 var SocketServer = require('./socket');
 
@@ -74,6 +76,7 @@ SocketServer({ server: server });
 if (process.env.pm_id === '0') {
   (0, _Client.clear)();
   (0, _Queue.clear)();
+  (0, _Room.clear)();
 }
 ;
 

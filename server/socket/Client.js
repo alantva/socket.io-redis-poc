@@ -1,5 +1,6 @@
 import { set as ClientSet, get as ClientGet } from './Client.Redis';
 import { pop as QueuePop } from './Queue.Redis';
+import { set as RoomSet, get as RoomGet } from './Room.Redis';
 
 const saveRegister = async (socket) => {
   try {
@@ -29,7 +30,7 @@ const recoverRegister = async (client) => {
   }
 };
 
-const assignPartner = async (client) => {
+const assignPartners = async (client) => {
   try {
     let id;
     let type;
@@ -50,9 +51,6 @@ const assignPartner = async (client) => {
       return null;
     }
     const partner = await recoverRegister({ id, type });
-    if (!partner) {
-      return null;
-    }
     return partner;
   } catch (err) {
     console.error('Client.assignClient', err);
@@ -60,8 +58,25 @@ const assignPartner = async (client) => {
   }
 };
 
+const assignToRoom = async (clientsIDs) => {
+  try {
+    const roomID = await RoomSet({ clientsIDs });
+    const clients = await Promise.all(clientsIDs.map(id => ClientGet({ id })));
+    await Promise.all(clients.map((client) => {
+      client.roomID = roomID;
+      console.log('client', client);
+      return ClientSet(client);
+    }));
+    return true;
+  } catch (err) {
+    console.error('Client.assignToRoom', err);
+    return false;
+  }
+};
+
 export {
   saveRegister,
   recoverRegister,
-  assignPartner,
+  assignPartners,
+  assignToRoom,
 };

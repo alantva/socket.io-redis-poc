@@ -12,6 +12,8 @@ var _Client = require('./Client.Redis');
 
 var _Queue = require('./Queue.Redis');
 
+var _Room = require('./Room.Redis');
+
 var _Client2 = require('./Client');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -34,13 +36,13 @@ module.exports = function (namespaces) {
 
             case 5:
               _context.next = 7;
-              return (0, _Client2.assignPartner)(client);
+              return (0, _Client2.assignPartners)(client);
 
             case 7:
               partner = _context.sent;
 
               if (!partner) {
-                _context.next = 12;
+                _context.next = 13;
                 break;
               }
 
@@ -48,18 +50,16 @@ module.exports = function (namespaces) {
               return (0, _Queue.remove)(client);
 
             case 11:
+              _context.next = 13;
+              return (0, _Client2.assignToRoom)([client.id, partner.id]);
+
+            case 13:
 
               socket.on('message', function (data) {
                 console.log('\nUSER Bot: ' + client.name + ' enviou uma mensagem.'); // eslint-disable-line
-                namespaces.customer.to(partner.socketID).emit('message', data, function () {
-                  console.log('PAU!'); // eslint-disable-line
-                });
-                socket.emit('message', data, function () {
-                  console.log('PIRU!'); // eslint-disable-line
-                });
+                namespaces.customer.to(partner.socketID).emit('message', data);
+                socket.emit('message', data);
               });
-
-            case 12:
 
               socket.on('disconnect', function () {
                 console.log('\nUSER Bot: ' + client.name + ' se desconectou. :('); // eslint-disable-line
@@ -67,11 +67,14 @@ module.exports = function (namespaces) {
                   console.log('\nUSER Bot: ' + client.name + ' teve seu registro removido. :)'); // eslint-disable-line
                 }
                 if ((0, _Queue.remove)(client)) {
-                  console.log('\nCUSTOMER Bot: ' + client.name + ' teve seu registro removido da fila. :)'); // eslint-disable-line
+                  console.log('\nUSER Bot: ' + client.name + ' teve seu registro removido da fila. :)'); // eslint-disable-line
+                }
+                if ((0, _Room.remove)([client.id])) {
+                  console.log('\nUSER Bot: ' + client.name + ' teve seu registro removido da sala. :)'); // eslint-disable-line
                 }
               });
 
-            case 13:
+            case 15:
             case 'end':
               return _context.stop();
           }
