@@ -11,6 +11,8 @@ const get = (data) => {
     Redis.hgetall(`w-api:client:${type}:${id}`, (err, result) => {
       if (err) {
         reject(err);
+      } else if (!result.id) {
+        resolve(null);
       } else {
         resolve(result);
       }

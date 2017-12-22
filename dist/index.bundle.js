@@ -61,7 +61,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "b9c735ae52ed012a2c9c"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "e1fd80399a8f49e9c3c7"; // eslint-disable-line no-unused-vars
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
@@ -81082,6 +81082,7 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
 
     _this.state = {
       value: '',
+      roomID: null,
       messages: [],
       ping: 0
     };
@@ -81093,15 +81094,12 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
   (0, _createClass3.default)(Chat, [{
     key: 'componentWillMount',
     value: function componentWillMount() {
-      var type = this.props.type;
-
-      this.namespace = (0, _socket2.default)("http://localhost:3030" + '/' + type, socketOptions);
-      this.namespace.on('message', this.handleMessage);
+      this.connection.on('message', this.handleMessage);
+      this.connection.on('room', this.handleRoom);
     }
   }, {
     key: 'componentWillUnmount',
     value: function componentWillUnmount() {
-      this.namespace.disconnect();
       this.connection.disconnect();
     }
   }, {
@@ -81116,13 +81114,15 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
     value: function onKeyDown(ev) {
       var _this2 = this;
 
-      var value = this.state.value;
+      var _state = this.state,
+          value = _state.value,
+          roomID = _state.roomID;
       var name = this.props.name;
       var keyCode = ev.keyCode;
 
       if (keyCode === 13) {
         ev.preventDefault();
-        this.namespace.emit('message', { name: name, text: value });
+        this.connection.emit('message', { name: name, text: value, roomID: roomID });
         this.setState({ value: '' }, function () {
           _this2.container.scrollTop = _this2.container.offsetHeight;
         });
@@ -81146,6 +81146,13 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
       });
     }
   }, {
+    key: 'handleRoom',
+    value: function handleRoom(data) {
+      var roomID = data.roomID;
+
+      this.setState({ roomID: roomID });
+    }
+  }, {
     key: 'handlePong',
     value: function handlePong(ping) {
       this.setState({ ping: ping });
@@ -81163,10 +81170,12 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
     value: function render() {
       var _this4 = this;
 
-      var _state = this.state,
-          value = _state.value,
-          messages = _state.messages,
-          ping = _state.ping;
+      var _state2 = this.state,
+          value = _state2.value,
+          roomID = _state2.roomID,
+          messages = _state2.messages,
+          ping = _state2.ping; // eslint-disable-line
+
       var _props = this.props,
           name = _props.name,
           type = _props.type;
@@ -81217,6 +81226,7 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
           'div',
           { style: inlineStyles.textareaContainer },
           _react3.default.createElement('textarea', {
+            disabled: roomID === null,
             type: 'text',
             style: inlineStyles.textareaStyle,
             value: value,
@@ -81228,7 +81238,7 @@ var Chat = _wrapComponent('Chat')((_class = function (_Component) {
     }
   }]);
   return Chat;
-}(_react2.Component), (_applyDecoratedDescriptor(_class.prototype, 'onChange', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'onChange'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'onKeyDown', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'onKeyDown'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handleMessage', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handleMessage'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handlePong', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handlePong'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handleDisconnect', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handleDisconnect'), _class.prototype)), _class));
+}(_react2.Component), (_applyDecoratedDescriptor(_class.prototype, 'onChange', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'onChange'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'onKeyDown', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'onKeyDown'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handleMessage', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handleMessage'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handleRoom', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handleRoom'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handlePong', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handlePong'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'handleDisconnect', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, 'handleDisconnect'), _class.prototype)), _class));
 
 Chat.propTypes = {
   id: _propTypes2.default.string.isRequired,

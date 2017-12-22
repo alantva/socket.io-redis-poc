@@ -1,6 +1,6 @@
 import { set as ClientSet, get as ClientGet } from './Client.Redis';
 import { pop as QueuePop } from './Queue.Redis';
-import { set as RoomSet, get as RoomGet } from './Room.Redis';
+import { set as RoomSet } from './Room.Redis';
 
 const saveRegister = async (socket) => {
   try {
@@ -10,7 +10,7 @@ const saveRegister = async (socket) => {
     /* Criando o registro no Redis */
     client.socketID = socket.id;
     await ClientSet(client);
-    console.log(`\n${client.type.toUpperCase()} Bot: ${client.name} foi registrado. :)`); // eslint-disable-line
+    console.log(`\n${client.type.toUpperCase()} BOT: ${client.name} foi registrado. :)`); // eslint-disable-line
     return client;
   } catch (err) {
     console.error('Client.saveRegister', err);
@@ -22,7 +22,7 @@ const recoverRegister = async (client) => {
   try {
     /* Recuperando o registro no Redis */
     const recoveredClient = await ClientGet(client);
-    console.log(`\n${recoveredClient.type.toUpperCase()} Bot: ${recoveredClient.name} foi recuperado. :)`); // eslint-disable-line
+    console.log(`\n${recoveredClient.type.toUpperCase()} BOT: ${recoveredClient.name} foi recuperado. :)`); // eslint-disable-line
     return recoveredClient;
   } catch (err) {
     console.error('Client.recoverRegister', err);
@@ -58,16 +58,14 @@ const assignPartners = async (client) => {
   }
 };
 
-const assignToRoom = async (clientsIDs) => {
+const assignToRoom = async (clients) => {
   try {
-    const roomID = await RoomSet({ clientsIDs });
-    const clients = await Promise.all(clientsIDs.map(id => ClientGet({ id })));
+    const roomID = await RoomSet({ clients });
     await Promise.all(clients.map((client) => {
-      client.roomID = roomID;
-      console.log('client', client);
+      client.roomID = roomID; // eslint-disable-line
       return ClientSet(client);
     }));
-    return true;
+    return { roomID };
   } catch (err) {
     console.error('Client.assignToRoom', err);
     return false;

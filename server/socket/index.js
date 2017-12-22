@@ -5,8 +5,7 @@ const io = require('socket.io');
 const redis = require('socket.io-redis');
 const cookieParser = require('socket.io-cookie');
 
-const UserListener = require('./User');
-const CustomerListener = require('./Customer');
+const Listeners = require('./Client.Listeners');
 
 module.exports = (opts) => {
   const server = opts.server || null;
@@ -21,15 +20,7 @@ module.exports = (opts) => {
   SocketServer.adapter(redis({ host: process.env.REDIS_URL, port: process.env.REDIS_PORT }));
   SocketServer.use(cookieParser);
 
-  SocketServer.on('connection', () => {});
-
-  const namespaces = {
-    user: SocketServer.of('/user'),
-    customer: SocketServer.of('/customer'),
-  };
-
-  UserListener(namespaces);
-  CustomerListener(namespaces);
+  Listeners(SocketServer);
 
   return SocketServer;
 };

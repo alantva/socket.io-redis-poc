@@ -78,6 +78,7 @@ class Chat extends Component {
     super(props);
     this.state = {
       value: '',
+      roomID: null,
       messages: [],
       ping: 0,
     };
@@ -86,13 +87,11 @@ class Chat extends Component {
   }
 
   componentWillMount() {
-    const { type } = this.props;
-    this.namespace = io(`${process.env.API_URL}/${type}`, socketOptions);
-    this.namespace.on('message', this.handleMessage);
+    this.connection.on('message', this.handleMessage);
+    this.connection.on('room', this.handleRoom);
   }
 
   componentWillUnmount() {
-    this.namespace.disconnect();
     this.connection.disconnect();
   }
 
@@ -104,12 +103,12 @@ class Chat extends Component {
 
   @autobind
   onKeyDown(ev) {
-    const { value } = this.state;
+    const { value, roomID } = this.state;
     const { name } = this.props;
     const { keyCode } = ev;
     if (keyCode === 13) {
       ev.preventDefault();
-      this.namespace.emit('message', { name, text: value });
+      this.connection.emit('message', { name, text: value, roomID });
       this.setState({ value: '' }, () => {
         this.container.scrollTop = this.container.offsetHeight;
       });
@@ -131,6 +130,12 @@ class Chat extends Component {
   }
 
   @autobind
+  handleRoom(data) {
+    const { roomID } = data;
+    this.setState({ roomID });
+  }
+
+  @autobind
   handlePong(ping) {
     this.setState({ ping });
   }
@@ -143,7 +148,7 @@ class Chat extends Component {
   }
 
   render() {
-    const { value, messages, ping } = this.state;
+    const { value, roomID, messages, ping } = this.state; // eslint-disable-line
     const { name, type } = this.props;
     return (
       <div style={inlineStyles.mainContainer} className={type}>
@@ -168,6 +173,7 @@ class Chat extends Component {
         </div>
         <div style={inlineStyles.textareaContainer}>
           <textarea
+            disabled={roomID === null}
             type="text"
             style={inlineStyles.textareaStyle}
             value={value}

@@ -41,7 +41,7 @@ var saveRegister = function () {
             return (0, _Client.set)(client);
 
           case 6:
-            console.log('\n' + client.type.toUpperCase() + ' Bot: ' + client.name + ' foi registrado. :)'); // eslint-disable-line
+            console.log('\n' + client.type.toUpperCase() + ' BOT: ' + client.name + ' foi registrado. :)'); // eslint-disable-line
             return _context.abrupt('return', client);
 
           case 10:
@@ -78,7 +78,7 @@ var recoverRegister = function () {
           case 3:
             recoveredClient = _context2.sent;
 
-            console.log('\n' + recoveredClient.type.toUpperCase() + ' Bot: ' + recoveredClient.name + ' foi recuperado. :)'); // eslint-disable-line
+            console.log('\n' + recoveredClient.type.toUpperCase() + ' BOT: ' + recoveredClient.name + ' foi recuperado. :)'); // eslint-disable-line
             return _context2.abrupt('return', recoveredClient);
 
           case 8:
@@ -170,48 +170,40 @@ var assignPartners = function () {
 }();
 
 var assignToRoom = function () {
-  var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee4(clientsIDs) {
-    var roomID, clients;
+  var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee4(clients) {
+    var roomID;
     return _regenerator2.default.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
             _context4.prev = 0;
             _context4.next = 3;
-            return (0, _Room.set)({ clientsIDs: clientsIDs });
+            return (0, _Room.set)({ clients: clients });
 
           case 3:
             roomID = _context4.sent;
             _context4.next = 6;
-            return Promise.all(clientsIDs.map(function (id) {
-              return (0, _Client.get)({ id: id });
-            }));
-
-          case 6:
-            clients = _context4.sent;
-            _context4.next = 9;
             return Promise.all(clients.map(function (client) {
-              client.roomID = roomID;
-              console.log('client', client);
+              client.roomID = roomID; // eslint-disable-line
               return (0, _Client.set)(client);
             }));
 
-          case 9:
-            return _context4.abrupt('return', true);
+          case 6:
+            return _context4.abrupt('return', { roomID: roomID });
 
-          case 12:
-            _context4.prev = 12;
+          case 9:
+            _context4.prev = 9;
             _context4.t0 = _context4['catch'](0);
 
             console.error('Client.assignToRoom', _context4.t0);
             return _context4.abrupt('return', false);
 
-          case 16:
+          case 13:
           case 'end':
             return _context4.stop();
         }
       }
-    }, _callee4, undefined, [[0, 12]]);
+    }, _callee4, undefined, [[0, 9]]);
   }));
 
   return function assignToRoom(_x4) {

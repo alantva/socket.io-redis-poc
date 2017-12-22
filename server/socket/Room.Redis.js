@@ -19,7 +19,8 @@ const get = (data) => {
   });
 };
 const set = async (data) => {
-  const { id = createProtocol(), clientsIDs = [] } = data;
+  const { id = createProtocol(), clients = [] } = data;
+  const clientsIDs = clients.map(client => client.id);
   return new Promise((resolve, reject) => {
     const pipeline = Redis.pipeline();
     clientsIDs.forEach((clientID) => {

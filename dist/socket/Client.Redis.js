@@ -32,6 +32,8 @@ var get = function get(data) {
     Redis.hgetall('w-api:client:' + type + ':' + id, function (err, result) {
       if (err) {
         reject(err);
+      } else if (!result.id) {
+        resolve(null);
       } else {
         resolve(result);
       }
